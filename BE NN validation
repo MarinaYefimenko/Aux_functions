@@ -1,0 +1,43 @@
+function validateBelgianNN(nn) {
+    // clean characters
+    const cleaned = nn.replace(/\D/g, '');
+
+    // length
+    if (cleaned.length !== 11) {
+        return false;
+    }
+
+    // slice
+    const birthDatePart = cleaned.slice(0, 6);
+    const sequenceNumber = parseInt(cleaned.slice(6, 9), 10);
+    const controlNumber = parseInt(cleaned.slice(9, 11), 10);
+
+    // birth date
+    const year = parseInt(birthDatePart.slice(0, 2), 10);
+    const month = parseInt(birthDatePart.slice(2, 4), 10);
+    const day = parseInt(birthDatePart.slice(4, 6), 10);
+    // range for year
+    const fullYear = year + (year >= 40 ? 1900 : 2000); 
+
+    const birthDate = new Date(fullYear, month - 1, day);
+    if (
+        birthDate.getFullYear() !== fullYear ||
+        birthDate.getMonth() + 1 !== month ||
+        birthDate.getDate() !== day
+    ) {
+        return false;
+    }
+
+    // first number
+    if (sequenceNumber < 1 || sequenceNumber > 997) {
+        return false;
+    }
+
+    // control number
+    let baseNumber = parseInt(cleaned.slice(0, 9), 10);
+    // after 2000 - add 2000000000
+    baseNumber += 2000000000;  
+    const calculatedControlNumber = 97 - (baseNumber % 97);
+
+    return calculatedControlNumber === controlNumber;
+}
