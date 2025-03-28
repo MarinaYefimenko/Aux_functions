@@ -1,0 +1,50 @@
+function restoreSelection() {
+    let savedRange = variables[/* editorCursorRange */'ab81c79a-3e02-4168-b6d3-f8837d8d6a10'];
+    if (!savedRange || !savedRange.startContainer) return false; 
+
+    const editor = document.querySelector(context.parameters['selector']);
+    if (!editor || !editor.contains(savedRange.startContainer)) return false; 
+
+    const range = document.createRange();
+    range.setStart(savedRange.startContainer, savedRange.startOffset);
+    range.setEnd(savedRange.endContainer, savedRange.endOffset);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    return true; 
+}
+
+
+function insertTextAtCursor(text, label) {
+    if (!restoreSelection()) return; 
+
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const span = document.createElement("span");
+    span.className = "mention";
+    span.setAttribute("data-type", "mention");
+    span.setAttribute("data-id", "92"); 
+    span.setAttribute("data-label", label);
+    span.setAttribute("contenteditable", "false");
+    span.textContent = `@${text}`;
+
+    range.insertNode(span);
+
+    const space = document.createTextNode(" ");
+    range.setStartAfter(span);
+    range.insertNode(space);
+
+    range.setStartAfter(space);
+    range.setEndAfter(space);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    //clean saved range
+    variables[/* editorCursorRange */'ab81c79a-3e02-4168-b6d3-f8837d8d6a10'] = null;
+}
