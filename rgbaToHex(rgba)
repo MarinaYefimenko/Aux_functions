@@ -1,0 +1,27 @@
+function rgbaToHex(rgba) {
+
+    const rgbaValues = rgba.replace(/rgba|\(|\)|\s/g, '').split(',');
+
+    const r = parseInt(rgbaValues[0]);
+    const g = parseInt(rgbaValues[1]);
+    const b = parseInt(rgbaValues[2]);
+    const a = parseFloat(rgbaValues[3]);
+
+    const toHex = (value) => {
+        const hex = value.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    // in 16
+    const toHexAlpha = (value) => {
+        const alpha = Math.round(value * 255).toString(16);
+        return alpha.length === 1 ? '0' + alpha : alpha;
+    };
+
+    const hexR = toHex(r);
+    const hexG = toHex(g);
+    const hexB = toHex(b);
+    const hexA = toHexAlpha(a);
+
+    return `#${hexR}${hexG}${hexB}${hexA}`;
+}
