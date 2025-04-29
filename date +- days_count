@@ -1,0 +1,46 @@
+function addDaysToDate(dateInput, days) {
+    if (typeof dateInput !== 'string' && !(dateInput instanceof Date)) {
+        throw new Error("Unsupported date format");
+    }
+    
+    let date;
+    
+    if (typeof dateInput === 'string') {
+        let parts = dateInput.split(/[\/\-]/).map(Number);
+        if (parts.length !== 3) {
+            throw new Error("Invalid date format");
+        }
+        
+        if (parts[0] > 31) { // Assuming format YYYY/MM/DD or YYYY-M-D
+            date = new Date(parts[0], parts[1] - 1, parts[2]);
+        } else if (parts[2] > 31) { // Assuming format DD/MM/YYYY or D-M-YYYY
+            date = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            throw new Error("Could not determine date format");
+        }
+    } else {
+        date = new Date(dateInput);
+    }
+    
+    if (isNaN(date.getTime())) {
+        throw new Error("Invalid date");
+    }
+    
+    if (days !== undefined && days !== 0) {
+        date.setDate(date.getDate() + days);
+    }
+    
+    let newDay = String(date.getDate()).padStart(2, '0');
+    let newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    let newYear = date.getFullYear();
+    
+    return `${newDay}/${newMonth}/${newYear}`;
+}
+
+// usage
+console.log(addDaysToDate("2025/2/19", -3)); // "16/02/2025"
+console.log(addDaysToDate("19/2/2025", -3)); // "16/02/2025"
+console.log(addDaysToDate("2025-2-19", -3)); // "16/02/2025"
+console.log(addDaysToDate("19-2-2025", -3)); // "16/02/2025"
+console.log(addDaysToDate(new Date(2025, 1, 19), -3)); // "16/02/2025"
+console.log(addDaysToDate("19-2-2025", 0)); // "19/02/2025"
