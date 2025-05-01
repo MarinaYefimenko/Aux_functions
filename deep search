@@ -1,0 +1,23 @@
+function searchArray(arr, query) {
+    if (!query) {
+        return arr;
+    }
+
+    function deepSearch(obj, query) {
+        if (obj === null || obj === undefined) {
+            return false;
+        }
+
+        const queryStr = String(query).toLowerCase();
+
+        // Если примитивный тип (число, строка, boolean и т. д.), проверяем на совпадение
+        if (typeof obj !== "object") {
+            return String(obj).toLowerCase().includes(queryStr);
+        }
+
+        // Если объект или массив, рекурсивно проверяем его значения
+        return Object.values(obj).some(value => deepSearch(value, query));
+    }
+
+    return arr.filter(item => deepSearch(item, query));
+}
