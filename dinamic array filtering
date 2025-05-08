@@ -1,0 +1,43 @@
+function getNestedValue(obj, keyPath) {
+    return keyPath.split('.').reduce((acc, key) => acc && acc[key], obj);
+}
+
+function createReactiveArray(array, keyPath, value = undefined) {
+    return new Proxy(array, {
+        get(target, prop) {
+            if (prop === 'filtered') {
+                return target.filter(item => {
+                    const nestedValue = getNestedValue(item, keyPath);
+                    return value !== undefined ? nestedValue === value : Boolean(nestedValue);
+                });
+            }
+            return Reflect.get(target, prop);
+        },
+        set(target, prop, newValue) {
+            const result = Reflect.set(target, prop, newValue);
+            return result;
+        }
+    });
+}
+
+// Пример использования
+let data = createReactiveArray([
+    { id: 1, category: { type: 'fruit' }, name: 'apple' },
+    { id: 2, category: { type: 'fruit' }, name: 'banana' },
+    { id: 3, category: { type: 'vegetable' }, name: 'carrot' },
+    { id: 4, category: { type: null }, name: 'unknown' }
+], 'category.type', 'fruit');
+
+console.log(data.filtered); // Оставит только объекты с category.type: 'fruit'
+
+// Изменение значения ключа отразится сразу
+setTimeout(() => {
+    data[1].category.type = 'vegetable';
+    console.log(data.filtered); // Теперь 'banana' исключен из результата
+}, 2000);
+
+// Добавление нового элемента тоже будет учитываться
+setTimeout(() => {
+    data.push({ id: 5, category: { type: 'fruit' }, name: 'grape' });
+    console.log(data.filtered); // Теперь включит новый элемент
+}, 4000);
