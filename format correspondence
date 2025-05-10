@@ -1,0 +1,6 @@
+const formatCorrespondence = (correspondence) => {
+    const map = { email: 'Email', mail: 'Letter', registered: 'reg. letter' };
+    return correspondence.map(c => map[c] || c).join(' & ');
+};
+
+console.log(formatCorrespondence(['email', 'registered'])); // "Email & reg. letter"
