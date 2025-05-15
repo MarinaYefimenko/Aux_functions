@@ -1,0 +1,100 @@
+//generate pdf - file object
+
+function base64ToFile(base64String, fileName = "output.pdf", mimeType = "application/pdf") {
+  // Декодируем Base64 строку в байты
+  const byteCharacters = atob(base64String);
+  const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+  const byteArray = new Uint8Array(byteNumbers);
+
+  // Создаём объект File
+  const file = new File([byteArray], fileName, {
+    type: mimeType,
+    lastModified: new Date().getTime(), // Время последнего изменения файла
+  });
+
+  return file;
+}
+
+// Получаем Base64 строку из переменной
+const base64String = variables['64d44b1e-9a40-41d6-a645-42c8d3357e30']?.['base64'];
+
+// Преобразуем в объект File
+const file = base64ToFile(base64String, 'output.pdf', 'application/pdf');
+
+// Теперь у нас есть объект File, который можно использовать для отправки на сервер
+console.log(file);
+
+
+
+/*__________________________________*/
+//generate pdf - form data
+
+async function generatePdf() {
+  const apiUrl = "https://worker.sndq.io/html-to-pdf";
+  const apiKey = "JkZXNjIjoic25kcS13b3JrZXIiLCJpYXQiOjE1MTYyMzkwMjJ9"; // Replace with your actual API key
+
+  const formData = new FormData();
+  formData.append(
+    "html",
+    `<html><style>${printFormatCSS}</style><body>${variables["eb8e822a-357e-4ec5-9dae-8f454d4f8867-283838a1-84a0-46ea-be86-a386f0a5ca32"]}</body></html>`
+  );
+  formData.append("pdf_name", "output.pdf");
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "X-SNDQ-API-Key": apiKey,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const pdfBlob = await response.blob();
+    
+    // Читаем Blob как Base64 строку
+    const base64String = await blobToBase64(pdfBlob);
+    console.log("PDF encoded as Base64");
+
+    return { base64: base64String, fileName: "output.pdf", mimeType: pdfBlob.type };
+  } catch (error) {
+    console.error("Failed to generate PDF:", error);
+    return null;
+  }
+}
+
+// Функция для кодирования Blob в Base64
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+function decodePdfFromBase64(base64String, fileName = "output.pdf", mimeType = "application/pdf") {
+  const byteCharacters = atob(base64String);
+  const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+  const byteArray = new Uint8Array(byteNumbers);
+  const pdfBlob = new Blob([byteArray], { type: mimeType });
+
+  const formData = new FormData();
+  formData.append("file", pdfBlob, fileName);
+
+  return formData;
+}
+
+
+/////////////////////////////////////usage
+const base64String = "your_base64_encoded_pdf_here";
+const pdfFormData = decodePdfFromBase64(base64String);
+
+// Теперь `pdfFormData` можно отправлять на сервер
+console.log(pdfFormData);
+
