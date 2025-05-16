@@ -1,0 +1,15 @@
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    const { latitude, longitude } = position.coords;
+    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+    // Send the data to the server
+    fetch('/api/save-location', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude, longitude }),
+    });
+  },
+  (error) => {
+    console.error('Error getting location:', error);
+  }
+);
