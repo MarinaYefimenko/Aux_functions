@@ -1,0 +1,36 @@
+// Prevent short words (like prepositions or conjunctions) from being left at the end of a line
+export function preventWidowWords() {
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. Target all common inline and block text elements
+    const textElements = document.querySelectorAll('p, span, h1, h2, h3, h4, h5, h6, li, dt, dd');
+
+    // 2. List of short words that should not "hang" at the end of a line
+    const shortWords = [
+      'a', 'an', 'at', 'by', 'in', 'of', 'on', 'to', 'up', 'and', 'but', 'or', 'if', 'is', 'it', 'as', 'for', 'nor'
+    ];
+
+    // 3. Process each element
+    textElements.forEach((element) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+
+      while (walker.nextNode()) {
+        textNodes.push(walker.currentNode);
+      }
+
+      textNodes.forEach((textNode) => {
+        let text = textNode.nodeValue;
+
+        // Replace normal spaces after short words with a non-breaking space
+        text = text.replace(/(^|\s)([a-zA-Z]{1,3})\s/g, (match, prefix, word) => {
+          if (shortWords.includes(word.toLowerCase())) {
+            return prefix + word + '\u00A0'; // \u00A0 = non-breaking space
+          }
+          return match;
+        });
+
+        textNode.nodeValue = text;
+      });
+    });
+  });
+}
