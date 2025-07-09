@@ -1,0 +1,23 @@
+export function trapFocus(container) {
+  const focusable = container.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+
+  let first = focusable[0];
+  let last = focusable[focusable.length - 1];
+
+  function handleTab(e) {
+    if (e.key !== "Tab") return;
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  container.addEventListener("keydown", handleTab);
+  return () => container.removeEventListener("keydown", handleTab);
+}
