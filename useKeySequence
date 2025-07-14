@@ -1,0 +1,21 @@
+import { useEffect, useRef } from "react";
+
+export function useKeySequence(targetSequence = [], onMatch) {
+  const buffer = useRef([]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      buffer.current.push(e.key.toLowerCase());
+      buffer.current = buffer.current.slice(-targetSequence.length);
+
+      if (
+        buffer.current.join(",") === targetSequence.map(k => k.toLowerCase()).join(",")
+      ) {
+        onMatch?.();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [targetSequence, onMatch]);
+}
