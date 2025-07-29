@@ -1,0 +1,16 @@
+import { useRef } from "react";
+
+export function useClickSequence(callback, delay = 400) {
+  const count = useRef(0);
+  const timer = useRef(null);
+
+  return () => {
+    count.current++;
+    clearTimeout(timer.current);
+
+    timer.current = setTimeout(() => {
+      callback(count.current);
+      count.current = 0;
+    }, delay);
+  };
+}
