@@ -1,0 +1,24 @@
+import { useState, useEffect } from "react";
+
+export function useHashParam(key) {
+  const getValue = () => {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    return hash.get(key);
+  };
+
+  const [value, setValue] = useState(getValue);
+
+  useEffect(() => {
+    const onHashChange = () => setValue(getValue());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [key]);
+
+  const updateHash = (newValue) => {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    hash.set(key, newValue);
+    window.location.hash = hash.toString();
+  };
+
+  return [value, updateHash];
+}
