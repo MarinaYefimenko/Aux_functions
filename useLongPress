@@ -1,0 +1,21 @@
+import { useRef, useCallback } from "react";
+
+export function useLongPress(callback, ms = 500) {
+  const timer = useRef();
+
+  const start = useCallback(() => {
+    timer.current = setTimeout(callback, ms);
+  }, [callback, ms]);
+
+  const clear = useCallback(() => {
+    clearTimeout(timer.current);
+  }, []);
+
+  return {
+    onMouseDown: start,
+    onMouseUp: clear,
+    onMouseLeave: clear,
+    onTouchStart: start,
+    onTouchEnd: clear,
+  };
+}
