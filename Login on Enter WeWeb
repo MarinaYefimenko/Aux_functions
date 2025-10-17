@@ -1,0 +1,30 @@
+// Код для события onLoginPageLoaded
+(function() {
+    // Сохраняем функцию листенера отдельно
+    const enterKeyListener = function(event) {
+        if (event.key === 'Enter') {
+            // Проверяем, что текущая страница — нужная
+            if (globalContext.page?.['id'] === globalContext.pages['9bc2263c-0ac4-46a5-bb5d-553b16afc85f']?.['id']) {
+                event.preventDefault();
+                // Триггерим сабмит через клик на ваш триггер
+                document.getElementById('login_submit_trigger')?.click();
+            }
+        }
+    };
+
+    // Вешаем листенер
+    document.addEventListener('keydown', enterKeyListener);
+
+    // Функция для отписки
+    const cleanup = () => {
+        document.removeEventListener('keydown', enterKeyListener);
+    };
+
+    // Регистрируем cleanup при уходе со страницы
+    if (window.WeWeb && WeWeb.onPageUnload) {
+        WeWeb.onPageUnload(cleanup);
+    } else {
+        // fallback, если onPageUnload недоступен
+        window.addEventListener('beforeunload', cleanup);
+    }
+})();
