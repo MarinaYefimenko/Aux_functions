@@ -1,0 +1,38 @@
+function isValidIBAN(iban) {
+    if (typeof iban !== "string") return false;
+
+    // Убираем пробелы и переводим в верхний регистр
+    iban = iban.replace(/\s+/g, '').toUpperCase();
+
+    // Проверка базового формата: 2 буквы + 2 цифры + от 1 до 30 символов
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(iban)) {
+        return false;
+    }
+
+    // Перемещаем первые 4 символа в конец
+    const rearranged = iban.slice(4) + iban.slice(0, 4);
+
+    // Преобразуем буквы в числа (A=10, B=11, ..., Z=35)
+    const numeric = rearranged.split('').map(ch => {
+        const code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) { // буквы
+            return code - 55; // 'A'->10, 'B'->11 ...
+        } else {
+            return ch;
+        }
+    }).join('');
+
+    // Проверка по модулю 97
+    let remainder = numeric;
+    while (remainder.length > 2) {
+        const block = remainder.slice(0, 9); // берем первые 9 цифр
+        remainder = (parseInt(block, 10) % 97) + remainder.slice(block.length);
+    }
+
+    return parseInt(remainder, 10) % 97 === 1;
+}
+
+// Пример использования:
+console.log(isValidIBAN("DE89 3704 0044 0532 0130 00")); // true
+console.log(isValidIBAN("GB82 WEST 1234 5698 7654 32")); // true
+console.log(isValidIBAN("DE00 0000 0000 0000 0000 00")); // false
