@@ -1,0 +1,13 @@
+function formatMinutesToTime(totalMinutes) {
+  if (typeof totalMinutes !== 'number' || isNaN(totalMinutes)) return null;
+  if (totalMinutes < 0 || totalMinutes >= 24 * 60) return null; // защита от некорректных значений
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  // Добавляем ведущие нули
+  const hh = hours.toString().padStart(2, '0');
+  const mm = minutes.toString().padStart(2, '0');
+
+  return `${hh}:${mm}`;
+}
