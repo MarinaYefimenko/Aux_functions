@@ -1,0 +1,32 @@
+function parseTimeToMinutes(input) {
+  if (!input) return null;
+
+  // Убираем пробелы и заменяем возможные разделители на двоеточие
+  let value = input.toString().trim().replace(/[.,;/\\-]/g, ':');
+
+  // Если пользователь ввёл просто "8" — добавляем ":00"
+  if (/^\d{1,2}$/.test(value)) {
+    value = `${value}:00`;
+  }
+
+  // Если "8:" или "8:0" — добавляем недостающие нули
+  if (/^\d{1,2}:$/.test(value)) {
+    value = `${value}00`;
+  }
+  if (/^\d{1,2}:\d$/.test(value)) {
+    value = `${value}0`;
+  }
+
+  // Проверяем корректный формат после всех замен
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+
+  let hours = parseInt(match[1], 10);
+  let minutes = parseInt(match[2], 10);
+
+  // Валидация диапазонов
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+  // Переводим в минуты
+  return hours * 60 + minutes;
+}
