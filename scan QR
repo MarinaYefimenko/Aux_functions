@@ -1,0 +1,128 @@
+// === Загружаем jsQR динамически ===
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+document.head.appendChild(script);
+
+
+  // === Создаем оверлей для сканера ===
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  `;
+
+  // === Контейнер камеры ===
+  const frame = document.createElement('div');
+  frame.style.cssText = `
+    position: relative;
+    border: 3px solid #0ADFE3;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 90%;
+    max-width: 400px;
+    aspect-ratio: 3/4;
+    background: black;
+  `;
+
+  // === Видео с камеры ===
+  const video = document.createElement('video');
+  video.setAttribute('playsinline', true);
+  video.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+  frame.appendChild(video);
+
+  // === Кнопка “✕” для закрытия ===
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    font-size: 24px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+  `;
+  frame.appendChild(closeBtn);
+
+  // === Добавляем всё в документ ===
+  overlay.appendChild(frame);
+  document.body.appendChild(overlay);
+
+  // === Скрытый canvas для анализа QR ===
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  let stream = null;
+  let scanning = true;
+
+  // === Запуск камеры ===
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      video.play();
+      requestAnimationFrame(scanFrame);
+    } catch (err) {
+      alert('No camera access');
+      console.error(err);
+      closeScanner();
+    }
+  }
+
+  // === Сканирование QR ===
+  function scanFrame() {
+    if (!scanning) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (code) {
+        console.log('QR gevonden:', code.data);
+        scanning = false;
+        stopCamera();
+        overlay.remove();
+
+        if (/^https?:\/\//i.test(code.data)) {
+          window.location.href = code.data;
+        } else {
+          alert(`QR gevonden: ${code.data}`);
+        }
+        return;
+      }
+    }
+    requestAnimationFrame(scanFrame);
+  }
+
+  // === Остановка камеры ===
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+  }
+
+  // === Закрытие окна сканера ===
+  function closeScanner() {
+    scanning = false;
+    stopCamera();
+    overlay.remove();
+  }
+
+  closeBtn.addEventListener('click', closeScanner);
+
+  // === Стартуем ===
+  startCamera();
+
